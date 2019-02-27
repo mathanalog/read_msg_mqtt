@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+import sys
+import syslog
+import time
+import mysql.connector
+from mysql.connector import errorcode
+from datetime import date
+from datetime import timedelta
+from datetime import datetime
+
+'''
+Function gets list of sensors from DB
+
+cnx - mysqlconnector
+
+returns list of sensors as array of integers
+'''
+def get_sensor_list(cnx):
+    cursor = cnx.cursor()
+    query = ("SELECT serial FROM sensor")
+    cursor.execute(query)
+
+    sensors = []
+
+    for (serial,) in cursor:
+        sensors.append(int(serial))
+
+    cursor.close()
+
+    return sensors
+
+'''
+Function goes through measurment_[avg]_hour_average table and
+gets latest timestamp for sensor. If there is no data for sensor,
+it returns 1970
+'''
+def get_last_timestamp_from_average_table(cnx, avg, sensor):
+    table = "measurment_"+str(avg)+"_hour_average";
+    cursor = cnx.cursor(buffered=True)
+    query = ("SELECT ts FROM " + table + " WHERE sensor_id = " + str(sensor) +
+            " ORDER BY ts DESC LIMIT 1")
+    cursor.execute(query)
+
+    ts = datetime.min;
+
+    if cursor.rowcount > 0:
+        ts = cursor.fetchone()[0]
+
+    cursor.close()
+
+    return ts;
+
+'''
+Function gets row with timestamp greater or equal to timestamp given
+in arguments from table.
+Function is meant to be used to fetch latest timestamp relative to
+given timestamp
+'''
+def get_next_ts(cnx, sensor, ts, round_to):
+    cursor = cnx.cursor(buffered=True)
+    query = ("SELECT ts FROM measurment_1_hour_average WHERE sensor_id = " + str(sensor) +
+            " AND ts > %s" + " ORDER BY ts LIMIT 1")
+    cursor.execute(query, (ts,))
+
+    ts = None
+
+    if cursor.rowcount > 0:
+        ts = cursor.fetchone()[0]
+        if round_to != -1:
+            new_hours = int(ts.hour/round_to)*round_to
+            ts = ts.replace(hour=new_hours,minute=0,second=0)
+
+    cursor.close()
+
+    return ts;
+
+
+'''
+function will get values between ts_start and ts_start + period,
+and write average to table measurment_[PERIOD]_hour_average
+'''
+def make_average(cnx, sensor, ts_start, period):
+    table = "measurment_"+str(period)+"_hour_average";
+    cursor = cnx.cursor(buffered=True)
+
+    ts_next = ts_start + timedelta(hours=period)
+
+    query = ("SELECT units,value,ts FROM measurment WHERE sensor_id = " + str(sensor) +
+            " AND ts BETWEEN %s AND %s ORDER BY ts")
+    cursor.execute(query, (ts_start, ts_next))
+
+    avg = 0;
+    last_ts = datetime.min
+    local_units = "N/A"
+
+    for (units, value, ts,) in cursor:
+        last_ts = ts
+        local_units = units
+        avg = (avg + value)/2
+
+    print(str(ts_next) + ":" + " average: " + str(avg) + " [" + str(local_units) + "]")
+
+    query = ("INSERT INTO " + table + " (sensor_id, units, value, ts) VALUES (%s,%s,%s,%s)")
+
+    cursor.execute(query, (sensor,local_units,avg,ts_next))
+    cnx.commit()
+
+    cursor.close()
+
+if __name__ == "__main__":
+    cnx = mysql.connector.connect(user='testuser', password='test623',
+                              host='127.0.0.1',
+                              database='smartcity',
+                              use_pure=False)
+
+    sensors = get_sensor_list(cnx)
+
+    while True:
+        for sensor in sensors:
+            for avg_hours in (8,24):
+                while True:
+                    ts = get_last_timestamp_from_average_table(cnx, avg_hours, sensor)
+
+                    print("Sensor: " + str(sensor) + ", period: " + str(avg_hours) + ", ts: " + str(ts))
+
+                    next1_ts = get_next_ts(cnx, sensor, ts, avg_hours)
+
+                    print("next1_ts -> " + str(next1_ts))
+
+                    if next1_ts is None:
+                        print("No next ts, break")
+                        break
+
+                    period = next1_ts + timedelta(hours=avg_hours)
+
+                    next2_ts = get_next_ts(cnx, sensor, period, -1)
+
+                    print("next2_ts -> " + str(next2_ts))
+
+                    if next2_ts is None:
+                        print("No next2_ts, break")
+                        break
+
+                    make_average(cnx, sensor, next1_ts, avg_hours)
+
+                    print("-----")
+
+        time.sleep(24*60*60)
+
+    cnx.close()

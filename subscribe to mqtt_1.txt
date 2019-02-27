@@ -1,0 +1,39 @@
+#!/usr/bin/python2
+
+import logging
+import paho.mqtt.client as mqtt
+import time
+
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+logging.basicConfig(filename = "/home/pi/SmartSense/test.log", format=LOG_FORMAT, level=logging.DEBUG, filemode = 'w' )
+logger = logging.getLogger()
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code"+str(rc))
+    client.subscribe("smarthome/node/+/sensor/temperature/1026/value/actual")
+
+
+def on_message(client, userdata, msg):
+    #if msg.payload.decode() == "smarthome/node/CB1F1707004B1200/sensor/temperature/1026/value/actual":
+        #logger.DEBUG("subscribing " + str(msg.payload ))
+    print("Primio sam: " + msg.payload.decode())
+    logger.debug("Primio sam: " + msg.payload.decode())
+
+#def on_subscribe(client, userdata, mid, granted_qos):
+   # print  :" " +str(userdata)
+
+
+
+
+
+print("Pokrenuo sam se")
+logger.debug('Pokrenuo sam se')
+
+
+client = mqtt.Client()
+client.on_connect = on_connect
+client.on_message = on_message
+client.connect("localhost", 1883, 60)
+
+
+client.loop_forever()

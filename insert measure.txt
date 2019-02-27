@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+N=80
+
+# Step in minutes for timestamp
+step=60
+
+# SO2
+sensor_id=164820806
+units="ppb"
+for ((i=0; i<$N;i++)){
+        ts=$(date -d "now + $(($i*$step)) minutes" +'%Y-%m-%d %H:%M:%S')
+        value=$(( (RANDOM%100) + 40 ))
+        echo "INSERT INTO measurment VALUES ($sensor_id, '$units', $value, '$ts');"
+}
+
+# CO
+sensor_id=162380341
+units="ppb"
+for ((i=0; i<$N;i++)){
+        ts=$(date -d "now + $(($i*$step)) minutes" +'%Y-%m-%d %H:%M:%S')
+        value=$(( (RANDOM%200) + 500 ))
+        echo "INSERT INTO measurment VALUES ($sensor_id, '$units', $value, '$ts');"
+}
+
+# NO
+sensor_id=160730357
+units="ppb"
+for ((i=0; i<$N;i++)){
+        ts=$(date -d "now + $(($i*$step)) minutes" +'%Y-%m-%d %H:%M:%S')
+        value=$(( (RANDOM%10) + 40 ))
+        echo "INSERT INTO measurment VALUES ($sensor_id, '$units', $value, '$ts');"
+}
+
+# NO2
+sensor_id=201730734
+units="ppb"
+for ((i=0; i<$N;i++)){
+        ts=$(date -d "now + $(($i*$step)) minutes" +'%Y-%m-%d %H:%M:%S')
+        value=$(( (RANDOM%10) + 40 ))
+        echo "INSERT INTO measurment VALUES ($sensor_id, '$units', $value, '$ts');"
+}
+
+# O3
+sensor_id=203390244
+units="ppb"
+for ((i=0; i<$N;i++)){
+        ts=$(date -d "now + $(($i*$step)) minutes" +'%Y-%m-%d %H:%M:%S')
+        value=$(( (RANDOM%10) + 40 ))
+        echo "INSERT INTO measurment VALUES ($sensor_id, '$units', $value, '$ts');"
+}
+
+# Presssure
+sensor_id=8
+units="kPa"
+for ((i=0; i<$N;i++)){
+        ts=$(date -d "now + $(($i*$step)) minutes" +'%Y-%m-%d %H:%M:%S')
+        value=$(( (RANDOM%50) + 80 ))
+        echo "INSERT INTO measurment VALUES ($sensor_id, '$units', $value, '$ts');"
+}
+
+# temperature
+sensor_id=4
+units="C"
+for ((i=0; i<$N;i++)){
+        ts=$(date -d "now + $(($i*$step)) minutes" +'%Y-%m-%d %H:%M:%S')
+        value=$(( (RANDOM%10) + 20 ))
+        echo "INSERT INTO measurment VALUES ($sensor_id, '$units', $value, '$ts');"
+}
+
+# PM1
+sensor_id=12
+units="ugm3"
+for ((i=0; i<$N;i++)){
+        ts=$(date -d "now + $(($i*$step)) minutes" +'%Y-%m-%d %H:%M:%S')
+        value=$(( (RANDOM%2000) + 5000 ))
+        echo "INSERT INTO measurment VALUES ($sensor_id, '$units', $value, '$ts');"
+}
+
+# PM2.5
+sensor_id=13
+units="ugm3"
+for ((i=0; i<$N;i++)){
+        ts=$(date -d "now + $(($i*$step)) minutes" +'%Y-%m-%d %H:%M:%S')
+        value=$(( (RANDOM%3000) + 4000 ))
+        echo "INSERT INTO measurment VALUES ($sensor_id, '$units', $value, '$ts');"
+}
+
+# PM10
+sensor_id=14
+units="ugm3"
+for ((i=0; i<$N;i++)){
+        ts=$(date -d "now + $(($i*$step)) minutes" +'%Y-%m-%d %H:%M:%S')
+        value=$(( (RANDOM%6000) + 1000 ))
+        echo "INSERT INTO measurment VALUES ($sensor_id, '$units', $value, '$ts');"
+}
