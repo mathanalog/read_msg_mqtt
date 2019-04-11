@@ -10,14 +10,14 @@ logger = logging.getLogger()
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code"+str(rc))
-    client.subscribe("smarthome/node/+/sensor/temperature/1026/value/actual")
+    client.subscribe("smart****/node/+/sensor/temperature/1026/value/actual")
 
 
 def on_message(client, userdata, msg):
-    #if msg.payload.decode() == "smarthome/node/CB1F1707004B1200/sensor/temperature/1026/value/actual":
+    #if msg.payload.decode() == "smart****/node/CB1F1707004B1200/sensor/temperature/1026/value/actual":
         #logger.DEBUG("subscribing " + str(msg.payload ))
-    print("Primio sam: " + msg.payload.decode())
-    logger.debug("Primio sam: " + msg.payload.decode())
+    print("i receive: " + msg.payload.decode())
+    logger.debug("i receive: " + msg.payload.decode())
 
 #def on_subscribe(client, userdata, mid, granted_qos):
    # print  :" " +str(userdata)
@@ -26,8 +26,8 @@ def on_message(client, userdata, msg):
 
 
 
-print("Pokrenuo sam se")
-logger.debug('Pokrenuo sam se')
+print("i run")
+logger.debug('i run')
 
 
 client = mqtt.Client()
